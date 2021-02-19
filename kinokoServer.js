@@ -1,24 +1,45 @@
-const express = require('express');
-const http = require('http').createServer(express);
 
-const io = require('socket.io')(http, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-        credential: true 
+
+const WebSideEventListner = require('./WebSide');
+const WebSide = require('./WebSide');
+const PythonSide = require('./PythonSide');
+const PythonSideEventListner = require('./PythonSide');
+// const ArduinoSide = require('./ArduinoSide');
+
+class kinokoServer {
+    constructor() {
+        this.socketObj = {
+            web: undefined,
+            python: undefined
+        };
     }
-});
 
-io.on('connection', function(sock) {
-    console.log('connect');
-    sock.emit('msg', "123");
+    Listen() {
+        this.webObj = new WebSideEventListner(this.socketObj);
+        this.pyObj = new PythonSideEventListner(this.socketObj);
+    }
+}
 
-    sock.on('message', (data) => {
-        console.log('data ', data);
-    });
-});
-
+kinoko = new kinokoServer();
+kinoko.Listen();
 
 
+// io.on('connection', function(sock) {    
+//     // // 아두이노 접속 소켓 초기화
+//     // sock.on('arduino_conn', (data) => {
+//     //     sock.emit('success');
+//     //     ardunioSock = sock;
+//     // });
 
+//     // 웹 접속 소켓 초기화
+//     sock.on('web_conn', (data) => {
+//         sock.emit('success');
+//         webSock = sock;
+//     });
 
+//     // // 파이썬 접속 소켓 초기화
+//     // sock.on('python_conn', (data) => {
+//     //     sock.emit('success');
+//     //     pythonSock = sock;
+//     // });
+// });
