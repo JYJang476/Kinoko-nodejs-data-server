@@ -19,6 +19,7 @@ class PythonSideEventListner {
             console.log('connect');
             // 파이썬 소켓 초기화
             socket.python = sock;
+            
             // 버섯 이미지 업로드
             // socket.python.on('upload_mushimg', this.UploadMushroomImage);
             // // 버섯 크기 변경

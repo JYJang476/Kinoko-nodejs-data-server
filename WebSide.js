@@ -10,7 +10,6 @@ const webIo = require('socket.io')(http, {
         credential: true 
     }
 });
-
 class WebSideEventListner {
     constructor(socket) {
         webIo.listen(3000);
