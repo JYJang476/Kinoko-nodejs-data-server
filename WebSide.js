@@ -74,6 +74,52 @@ class WebSideEventListner {
                     });
                 }
             });
+
+            // 배지 영상 요청
+            socket.web.on('req_video', (request) => {
+                console.log(request);
+                // 하드웨어 소켓 접속 상태 확인
+                if(typeof socket.python == "undefined") {
+                    socket.web.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "기기와 연결이 되지 않음"
+                    }));
+                } else {
+            
+                    // 하드웨어에 데이터 요청
+                    socket.python.emit('req_video', request);
+                    
+                    // 응답 대기
+                    socket.web.on('res_video', (data) => {
+                        socket.web.emit("res_video", data);
+                    });
+                }
+            });
+
+            // 배지 확인
+            socket.web.on('req_compost', (request) => {
+                console.log(request);
+                // 하드웨어 소켓 접속 상태 확인
+                if(typeof socket.python == "undefined") {
+                    socket.web.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "기기와 연결이 되지 않음"
+                    }));
+                } else {
+            
+                    // 하드웨어에 데이터 요청
+                    socket.python.emit('req_compost', request);
+                    
+                    // 응답 대기
+                    socket.web.on('res_compost', (data) => {
+                        socket.web.emit("res_compost", data);
+                    });
+                }
+            });
+
+            socket.web.on('disconnect', () => {
+                console.log("123124");
+            });
         });
     }
 

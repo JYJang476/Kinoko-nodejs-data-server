@@ -77,76 +77,36 @@ class PythonSideEventListner {
                     socket.web.emit('res_3ddata', request);
                 }
             });
-        });
-    }
 
-    // 배지 데이터 반환
-    ResponseCompostData(request) {
-        // 웹 소켓 접속 상태 확인
-        if(socket.web == undefined)
-            socket.python.emit('error', JSON.stringify({
-                code: 401,
-                message: "웹과 연결이 되지 앟음"
-            }));
+            
+            socket.python.on('res_video', (request) => {
+                // 웹 소켓 접속 상태 확인
+                if(socket.web == undefined)
+                    socket.python.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "웹과 연결이 되지 앟음"
+                    }));
+                else {
+                    console.log(request);
+                    // 웹으로 데이터 전송
+                    socket.web.emit('res_video', request);
+                }
+            });
 
-        // 웹으로 데이터 전송
-        socket.web.emit('res_data', request);
-    }
-
-    // 버섯 이미지 업로드
-    // param : 버섯 id, 이미지 데이터
-    UploadMushroomImage(request) {
-        axios({
-            url: "미정",
-            method: "post",
-            params: request
-        }).then(() => {
-            sock.emit('success');
-        });
-    }
-
-    // 버섯의 크기 조정
-    // parma : 버섯 id, 크기
-    SetMushroomSize(request) {
-        axios({
-            url: "미정",
-            method: "post",
-            params: request
-        }).then(() => {
-            sock.emit('success');
-        });
-    }
-
-    // 새로운 버섯 추가
-    AddMushroom(request) {
-        axios({
-            url: "미정",
-            method: "post",
-            params: request
-        }).then(() => {
-            sock.emit('success');
-        });
-    }
-
-    // 버섯 상태 변경
-    SetMushroomStatus(request) {
-        axios({
-            url: "미정",
-            method: "post",
-            params: request
-        }).then(() => {
-            sock.emit('success');
-        });
-    }
-
-    // 버섯 정보 변경
-    SetMushroomInfo(request) {
-        axios({
-            url: "미정",
-            method: "post",
-            params: request
-        }).then(() => {
-            sock.emit('success');
+            // 배지 존재 유무
+            socket.python.on('res_compost', (request) => {
+                // 웹 소켓 접속 상태 확인
+                if(socket.web == undefined)
+                    socket.python.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "웹과 연결이 되지 앟음"
+                    }));
+                else {
+                    console.log(request);
+                    // 웹으로 데이터 전송
+                    socket.web.emit('res_compost', request);
+                }
+            });
         });
     }
 }
