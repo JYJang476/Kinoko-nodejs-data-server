@@ -1,19 +1,17 @@
 const axios = require('axios');
 const { isUndefined } = require('util');
 const mainServer = require('./kinokoServer');
-const http = require('http').createServer(3051);
+const http = require('http').createServer(3000);
 
 const webIo = require('socket.io')(http, {
     cors: {
-        origin: "*",
         methods: ["GET", "POST"],
         credential: true 
-    }
+    }    
 });
 class WebSideEventListner {
     constructor(socket) {
         webIo.listen(3000);
-
         webIo.on('connection', function(sock) {    
             console.log('connect');
             socket.web = sock;
@@ -44,18 +42,37 @@ class WebSideEventListner {
                 if(typeof socket.python == "undefined") {
                     socket.web.emit('error', JSON.stringify({
                         code: 401,
-                        message: "기기와 연결이 되지 앟음"
+                        message: "기기와 연결이 되지 않음"
                     }));
-                    return;
+                } else {
+                    // 하드웨어에 데이터 요청
+                    socket.python.emit('req_3ddata', request);
+            
+                    // 응답 대기
+                    socket.web.on('res_3ddata', (data) => {
+                        socket.web.emit("req_cosdata", data);
+                    });
                 }
-        
-                // 하드웨어에 데이터 요청
-                socket.python.emit('req_3ddata', request);
-        
-                // 응답 대기
-                socket.web.on('res_3ddata', (data) => {
-                    socket.web.emit("req_cosdata", data);
-                });
+            });
+
+            // 배지 이미지 요청
+            socket.web.on('req_image', (request) => {
+                // 하드웨어 소켓 접속 상태 확인
+                if(typeof socket.python == "undefined") {
+                    socket.web.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "기기와 연결이 되지 않음"
+                    }));
+                } else {
+         
+                    // 하드웨어에 데이터 요청
+                    socket.python.emit('req_image', request);
+            
+                    // 응답 대기
+                    socket.web.on('res_image', (data) => {
+                        socket.web.emit("req_image", data);
+                    });
+                }
             });
         });
     }
