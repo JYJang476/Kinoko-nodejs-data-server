@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { Socket } = require('dgram');
 const mainServer = require('./kinokoServer');
-const http = require('http').createServer(3001);
+const http = require('http').createServer();
 
 const pyIo = require('socket.io')(http, {
     cors: {
@@ -19,20 +19,6 @@ class PythonSideEventListner {
             console.log('connect');
             // 파이썬 소켓 초기화
             socket.python = sock;
-            
-            // 버섯 이미지 업로드
-            // socket.python.on('upload_mushimg', this.UploadMushroomImage);
-            // // 버섯 크기 변경
-            // socket.python.on('set_mushsize', this.SetMushroomSize);
-            // // 버섯 추가
-            // socket.python.on('add_mushroom', this.UploadMushroomImage);
-            // // 버섯 상태 변경
-            // socket.python.on('set_mushroom', this.SetMushroomStatus);
-            // // 3D 데이터 전송
-            // socket.python.on('upload_mushimg', this.UploadMushroomImage);
-            // // 버섯 정보 변경
-            // socket.python.on('set_mushdata', this.SetMushroomInfo);
-            // 기기 상태 변경
 
             // 기기 배지 유무 변경
             // 배지 데이터 반환

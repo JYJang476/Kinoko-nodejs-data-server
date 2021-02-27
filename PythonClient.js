@@ -4,7 +4,6 @@ const socket = webIo("ws://localhost:3001");
 
 socket.on('connect', () => {
     console.log('connect');
-    socket.emit('connect');
 
     socket.on('req_cosdata', (data) => {
         let sndData = JSON.stringify({

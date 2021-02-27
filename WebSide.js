@@ -117,55 +117,19 @@ class WebSideEventListner {
                 }
             });
 
-            socket.web.on('disconnect', () => {
-                console.log("123124");
+            socket.web.on('disconnect', (data) => {
+                // 하드웨어 소켓 접속 상태 확인
+                if(typeof socket.python == "undefined") {
+                    socket.web.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "기기와 연결이 되지 않음"
+                    }));
+                } else {
+                    socket.web = undefined;
+                    socket.python.emit('close', request);
+                }
             });
         });
-    }
-
-    // 배지 데이터 요청 받음
-    // param : 기기 id
-    RequestCompostData(request) {
-        // 하드웨어 소켓 접속 상태 확인
-        if(typeof socket.python == "undefined")
-            this.sockObj.web.emit('error', JSON.stringify({
-                code: 401,
-                message: "기기와 연결이 되지 앟음"
-            }));
-
-        // 하드웨어에 요청
-        socket.python.emit("req_cosdata", request);
-        
-        // 하드웨어 메세지 대기
-        socket.python.on("res_cosdata", (data) => {
-            socket.web.emit("req_cosdata", data);
-        });
-    }
-    
-    // 배지 데이터 반환
-    ResponseCompostData(data) {
-        socket.web.emit("req_cosdata", data);
-    }
-
-    // 배지 3D 데이터 요청
-    RequestCompost3D(request) {
-        // 하드웨어 소켓 접속 상태 확인
-        if(typeof this.sockObj.python == "undefined")
-            this.sockObj.web.emit('error', JSON.stringify({
-                code: 401,
-                message: "기기와 연결이 되지 앟음"
-            }));
-
-        // 하드웨어에 데이터 요청
-        this.sockObj.python.emit('req_3ddata', request);
-
-        // 응답 대기
-        this.sockObj.web.on('res_3ddata', this.ResponseCompost3D);
-    }
-    
-    // 배지 3D 데이터 반환
-    ResponseCompost3D(request) {
-        this.sockObj.web.emit(request);
     }
 }
 
