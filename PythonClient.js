@@ -22,4 +22,9 @@ socket.on('connect', () => {
 
         socket.emit('res_image', data);
     });
+
+    
+    socket.on('close', (data) => {
+        console.log("disconnect");
+    });
 });

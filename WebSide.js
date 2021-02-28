@@ -125,8 +125,7 @@ class WebSideEventListner {
                         message: "기기와 연결이 되지 않음"
                     }));
                 } else {
-                    socket.web = undefined;
-                    socket.python.emit('close', request);
+                    socket.python.emit('close', data);
                 }
             });
         });
