@@ -39,18 +39,18 @@ class WebSideEventListner {
             // 배지 3D 데이터 요청
             socket.web.on('req_cos3d', (request) => {
                 // 하드웨어 소켓 접속 상태 확인
-                if(typeof socket.python == "undefined") {
+                if(typeof socket.ply == "undefined") {
                     socket.web.emit('error', JSON.stringify({
                         code: 401,
                         message: "기기와 연결이 되지 않음"
                     }));
                 } else {
                     // 하드웨어에 데이터 요청
-                    socket.python.emit('req_3ddata', request);
+                    socket.ply.emit('req_cos3d', request);
             
                     // 응답 대기
-                    socket.web.on('res_3ddata', (data) => {
-                        socket.web.emit("req_cosdata", data);
+                    socket.ply.on('res_cos3d', (data) => {
+                        socket.web.emit("res_cos3d", data);
                     });
                 }
             });
@@ -75,6 +75,26 @@ class WebSideEventListner {
                 }
             });
 
+            socket.web.on('req_motorcontrol', (request) => {
+                console.log(request);
+                // 하드웨어 소켓 접속 상태 확인
+                if(typeof socket.python == "undefined") {
+                    socket.web.emit('error', JSON.stringify({
+                        code: 401,
+                        message: "기기와 연결이 되지 않음"
+                    }));
+                } else {
+            
+                    // 하드웨어에 데이터 요청
+                    socket.python.emit('req_motorcontrol', request);
+                    
+                    // 응답 대기
+                    socket.web.on('res_motorcontrol', (data) => {
+                        socket.web.emit("res_motorcontrol", data);
+                    });
+                }
+            });
+
             // 배지 영상 요청
             socket.web.on('req_video', (request) => {
                 console.log(request);
@@ -92,27 +112,6 @@ class WebSideEventListner {
                     // 응답 대기
                     socket.web.on('res_video', (data) => {
                         socket.web.emit("res_video", data);
-                    });
-                }
-            });
-
-            // 배지 확인
-            socket.web.on('req_compost', (request) => {
-                console.log(request);
-                // 하드웨어 소켓 접속 상태 확인
-                if(typeof socket.python == "undefined") {
-                    socket.web.emit('error', JSON.stringify({
-                        code: 401,
-                        message: "기기와 연결이 되지 않음"
-                    }));
-                } else {
-            
-                    // 하드웨어에 데이터 요청
-                    socket.python.emit('req_compost', request);
-                    
-                    // 응답 대기
-                    socket.web.on('res_compost', (data) => {
-                        socket.web.emit("res_compost", data);
                     });
                 }
             });
