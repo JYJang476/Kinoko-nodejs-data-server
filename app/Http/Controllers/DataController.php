@@ -11,26 +11,33 @@ class DataController extends Controller
 {
     function AddData(Request $request) {
         $validator = Validator::make($request->all(),[
-            "prgId" => "required",
-            "value" => "required",
-            "type" => "required"
+            "prgId" => "required", // 프로그램 id
+            "tempValue" => "required", // 데이터 값
+            "humiValue" => "required",
         ]);
 
         if($validator->fails())
             return response($validator->errors(), 400);
 
-        DataModel::insert([
-            'prgid' => $request->prgid,
-            'value' => $request->value[0],
+        $tempResult = DataModel::insert([
+            'prgid' => $request->prgId,
+            'value' => $request->tempValue,
             'type' => 'temperature',
         ]);
-        DataModel::insert([
-            'prgid' => $request->prgid,
-            'value' => $request->value[1],
+
+        if(!$tempResult)
+            return response('온도 값 추가 실패', 403);
+
+        $humiResult = DataModel::insert([
+            'prgid' => $request->prgId,
+            'value' => $request->humiValue,
             'type' => 'humidity',
         ]);
 
-        return respnse('성공', 200);
+        if(!$humiResult)
+            return response('습도 값 추가 실패', 403);
+
+        return response('성공', 201);
     }
 
     function GetDataToLastlogout(Request $request) {

@@ -55,6 +55,13 @@ return [
             'visibility' => 'public',
         ],
 
+        'ply' => [
+            'driver' => 'local',
+            'root' => storage_path('app/ply'),
+            'url' => env('APP_URL').'/ply',
+            'visibility' => 'public',
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -79,6 +86,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('ply') => storage_path('app/ply'),
     ],
 
 ];

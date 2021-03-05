@@ -132,6 +132,23 @@ class ProgramController extends Controller
         return response($program->date_start, 200);
     }
 
+    public function GetEndDate(Request $request) {
+        $validator = Validator::make($request->all(),[
+            "id" => "required",
+        ]);
+
+        if($validator->fails())
+            return response($validator->errors(), 400);
+
+        $program = ProgramModel::join('Dates', 'Programs.prg_dateid', 'Dates.id')
+            ->where('Programs.id', '=', $request->id)->first();
+
+        if($program == null)
+            return response('해당 데이터를 찾지 못했습니다.', 404);
+
+        return response($program->date_end, 200);
+    }
+
     public function AddCustomProgram(Request $request) {
         // 유저 id, 재배기간, 물주기, 햇빛, 온도, 습도, 프로그램 이름
         $validator = Validator::make($request->all(),[
@@ -174,6 +191,10 @@ class ProgramController extends Controller
             return response('실패', 403);
 
         $insertProgramId = ProgramModel::all()->last()->id;
+
+        DateModel::where('id', '=', $insertDate->id)->update([
+            'date_prgid' => $insertProgramId
+        ]);
         // 재배 기간 만큼 빈 데이터 추가
         for($i = 0; $i < $request->period; $i++) {
             if(ProgramModel::where('id', '=', $insertProgramId)->first() == null)
@@ -214,7 +235,21 @@ class ProgramController extends Controller
         if(!$result)
             return response('해당 데이터 없음', 404);
 
+        if($result->prg_compostname == null)
+            return response('배지 이름이 없습니다.', 404);
+
         return response($result->prg_compostname, 200);
+    }
+
+    public function SetEndProgram(Request $request) {
+        $result = DateModel::where('date_userid', '=', $request->id)->update([
+            'date_end' => Carbon::now()->addHour(9)->format("Y-m-d H:i:s")
+        ]);
+
+        if(!$result)
+            return response('실패', 403);
+
+        return reponse('성공', 200);
     }
 
     public function ExtendCustomPeriod(Request $request) {
@@ -237,6 +272,10 @@ class ProgramController extends Controller
             ->where('token', '=', $token)->first();
 
         $program = ProgramModel::where('id', '=', $request->id)->first();
+
+        DateModel::where('date_userid', '=', $user->id)->update([
+            'date_end' => Carbon::now()->addHour(9)->format("Y-m-d H:i:s")
+        ]);
 
         $nowDate = Carbon::now()->addHour(9);
         for($i = 0; $i < $request->period; $i++) {

@@ -8,9 +8,10 @@ class DateModel extends Model
 {
     protected $table = 'Dates';
     protected $primaryKey = 'date_id';
+    public $timestamps = false;
 
     protected $fillable = [
-        'date_userid', 'date_start', 'date_start', 'date_end'
+        'date_userid', 'date_start', 'date_start', 'date_end', 'date_prgid'
     ];
 
     public function users() {

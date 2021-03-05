@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DateModel;
 use App\Http\Controllers\Controller;
 use App\SettingModel;
 use App\User;
@@ -32,7 +33,7 @@ class MachineController extends Controller
 
         // 새로운 기기를 추가한다.
         $result = MachineModel::insert([
-            'machine_userid' => 1,
+            'machine_userid' => 0,
             'machine_prgid' => 0,
             'machine_pin' => $request->pin,
             'machine_name' => ""
@@ -74,11 +75,23 @@ class MachineController extends Controller
         if($validator->fails())
             return response($validator->errors(), 400);
 
-        $prgObj = ProgramModel::where([
-            'prg_machineid' => $request->id,
-        ])->first();
+        $prgObj = ProgramModel::where('id', '=', $request->prgId);
 
         $machineObj = MachineModel::where('id', '=', $request->id)->first();
+
+        if($prgObj->first()->prg_count + 1 == 1) {
+            // 기간 만큼 빈 날짜 데이터 추가
+            DateModel::insert([
+                'date_userid' => $machineObj->machine_userid,
+                'date_prgid' => $request->prgId
+            ]);
+
+            $insertDateid = DateModel::all()->last()->id;
+
+            $prgObj->update([
+                'prg_dateid' => $insertDateid
+            ]);
+        }
 
         if(!$machineObj)
             return response('기기 받아오기 실패', 404);
@@ -94,6 +107,7 @@ class MachineController extends Controller
             'setting_prgid' => $request->prgId,
             'setting_type' => 'temperature'
         ])->get();
+
         $tempsetting = SettingModel::where([
             'setting_prgid' => $request->prgId,
             'setting_type' => 'humidity'
@@ -102,15 +116,19 @@ class MachineController extends Controller
 
         foreach($setting as $data){
             SettingModel::where('id', '=', $data->id)->update([
-               'setting_date' => Carbon::now()->addDay($i++)
+               'setting_date' => Carbon::now()->addHour(9)->addDay($i++)
             ]);
         }
         $i = 0;
         foreach($tempsetting as $data){
             SettingModel::where('id', '=', $data->id)->update([
-                'setting_date' => Carbon::now()->addDay($i++)
+                'setting_date' => Carbon::now()->addHour(9)->addDay($i++)
             ]);
         }
+
+        DateModel::where('id', '=', $prgObj->first()->prg_dateid)->update([
+           'date_start' => Carbon::now()->addHour(9)->format("Y-m-d H:i:s")
+        ]);
 
         return response('성공', 201);
     }
@@ -207,7 +225,7 @@ class MachineController extends Controller
         $userId = $machine->first()->machine_userid;
 
         $result = $machine->update([
-            "machine_userid" => 1
+            "machine_userid" => 0
         ]);
 
         $machineId = UserModel::where('id', '=', $machine->first()->id)
@@ -245,7 +263,7 @@ class MachineController extends Controller
             return response("해당 유저가 없습니다", 404);
         if($result->pin_pw != $request->pw)
             return response("비밀번호 인증 실패", 401);
-        if($result->machine_userid != 1)
+        if($result->machine_userid != 0)
             return response('이미 등록된 기기', 404);
 
         MachineModel::where('machine_pin', '=', $request->pin)->update([
@@ -273,6 +291,22 @@ class MachineController extends Controller
             return response('해당 데이터가 없습니다.', 404);
 
         return response($machine->get()->toArray(), 200);
+    }
+
+    function GetMachineData(Request $request) {
+        $validator = Validator::make($request->all(),[
+            "id" => "required" // 기기 id
+        ]);
+
+        if($validator->fails())
+            return response($validator->errors(), 400);
+
+        $machine = MachineModel::where('id', '=', $request->id)->first();
+
+        if($machine == null)
+            return response('해당 기기가 없음', 404);
+
+        return response($machine, 200);
     }
 
     function GetMachineList(Request $request)
@@ -317,8 +351,8 @@ class MachineController extends Controller
             'machine_ip' => $request->ip
         ]);
 
-        if(!$result)
-            return response('변경에 실패하였습니다.', 403);
+//        if(!$result)
+//            return response('변경에 실패하였습니다.', 403);
         return response('변경 성공', 200);
     }
 }

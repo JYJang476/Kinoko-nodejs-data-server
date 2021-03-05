@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\DateModel;
+use App\MachineModel;
 use App\TokenModel;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\UserModel;
 use Validator;
@@ -33,6 +36,17 @@ class UserController extends Controller
             return response('가입 실패', 403);
     }
 
+    // 기기 id로 유저 정보 가져오기
+    function GetUserInfo($id) {
+
+        $hasUser = UserModel::where('user_machineid', '=', $id)->first();
+
+        if($hasUser == null)
+            return response('등록되어있지 않은 기기', 404);
+
+        return response($hasUser, 200);
+    }
+
     // 기기 받아오는 함수
     // param: 토큰
     function GetMachineId(Request $request) {
@@ -42,6 +56,7 @@ class UserController extends Controller
 
         if($validator->fails())
             return response($validator->errors(), 400);
+
         $userid = TokenModel::where('token', '=', $request->token)->first()->user_no;
 
         $result = UserModel::select('Users.id', 'Users.user_machineid', 'Machines.machine_name')
@@ -65,14 +80,22 @@ class UserController extends Controller
         if($validator->fails())
             return response($validator->errors(), 400);
 
-        $result = UserModel::select('Users.id', 'token.user_no', 'token.token')->join('token', 'Users.id', 'token.user_no')
-            ->where('token', '=', $request->token)
-            ->update([
-                'user_machineid' => $request->id
-            ]);
+        $result = UserModel::select('Users.id', 'Users.user_machineid', 'token.user_no', 'token.token')->join('token', 'Users.id', 'token.user_no')
+            ->where('token', '=', $request->token);
 
-        if(!$result)
-            return response('기기 선택 실패', 403);
+        if($result->count() == 0)
+            return response('기기를 찾을 수 없습니다.', 404);
+
+        $write = $result->update([
+            'user_machineid' => $request->id
+        ]);
+
+//        if(!$write)
+//            return response('기기 선택 실패', 403);
+
+        $machine = MachineModel::select('Programs.prg_dateid')->join('Programs', 'Machines.machine_prgid', 'Programs.id')
+                                ->where('Machines.id', '=', $request->id)->first();
+
 
         return response('기기 선택 성공', 200);
     }
@@ -149,7 +172,7 @@ class UserController extends Controller
             return response('토큰 삭제 실패', 403);
 
         $user->update([
-            'user_lastlogout' => \Carbon\Carbon::now()
+            'user_lastlogout' => \Carbon\Carbon::now()->addHour(9)
         ]);
 
         return response('로그아웃 성공', 200);

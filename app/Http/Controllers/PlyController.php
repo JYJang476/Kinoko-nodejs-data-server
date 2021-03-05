@@ -21,22 +21,36 @@ class  PlyController extends Controller
 
         $responseData = Storage::get($plyImage->first()->url);
 
-        Storage::delete($plyImage->first()->url);
+        return response($responseData, 200);
+    }
+    
+    public function GetFileToURL(Request $request) {
+        $plyImage = PlyModel::where('url', '=', $request->url);
 
-        if(!$plyImage->delete())
-            return response('파일 삭제 실패', 403);
+        if($plyImage->first() == null)
+            return response('파일 없음', 404);
 
+        $responseData = Storage::get($request->url);
         return response($responseData, 200);
     }
 
     public function UploadFile(Request $request) {
         // 파라미터의 유효성 검사
         $validator = Validator::make($request->all(),[
-            "machineid" => "required|unique:3ddata"
+            "machineid" => "required"
         ]);
 
         if($validator->fails())
             return response($validator->errors(), 400);
+
+        $plyImage = PlyModel::where('machineid', '=', $request->machineid)->first();
+
+        if($plyImage != null) {
+            Storage::delete($plyImage->url);
+
+            if (!$plyImage->delete())
+                return response('파일 삭제 실패', 403);
+        }
 
         $path = $request->file('ply')->store('ply');
 
@@ -49,5 +63,14 @@ class  PlyController extends Controller
             return response('업로드에 실패하였습니다.', 403);
 
         return response('업로드 성공', 201);
+    }
+
+    public function GetFileURL($id) {
+        $plyImage = PlyModel::where('machineid', $id);
+
+        if($plyImage == null)
+            return response('파일 없음', 404);
+
+        return response($plyImage->first()->url, 200);
     }
 }
